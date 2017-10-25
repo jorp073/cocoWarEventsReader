@@ -1,16 +1,9 @@
 #include "mainwindow.h"
 #include <QApplication>
+#include <QtTest/QtTest>
 
 #include "opencv2/core.hpp"
+#include "test/test.h"
 using namespace cv;
 
-int main(int argc, char *argv[])
-{
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
-
-    Mat ab;
-
-    return a.exec();
-}
+QTEST_MAIN(Test)

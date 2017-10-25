@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
+QT       += testlib
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -24,11 +25,17 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 INCLUDEPATH += F:\opencv3.3.1\build\include
-LIBS     += -L"F:\opencv3.3.1\build\lib\Debug" -lopencv_core331d
+LIBS     += -L"F:\opencv3.3.1\build\lib\Debug" \
+    -lopencv_core331d -lopencv_highgui331d -lopencv_imgcodecs331d \
+    -lopencv_imgproc331d
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    recognizer/dialogrecognizer.cpp \
+    test/test.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    recognizer/dialogrecognizer.h \
+    test/test.h
 
 FORMS    += mainwindow.ui
