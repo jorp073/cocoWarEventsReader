@@ -23,11 +23,21 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
+win32 {
+    INCLUDEPATH += F:\opencv3.3.1\build\include
+    debug{
+        LIBS     += -L"F:\opencv3.3.1\build\lib\Debug" \
+            -lopencv_core331d -lopencv_highgui331d -lopencv_imgcodecs331d \
+            -lopencv_imgproc331d
+    }
+}
 
-INCLUDEPATH += F:\opencv3.3.1\build\include
-LIBS     += -L"F:\opencv3.3.1\build\lib\Debug" \
-    -lopencv_core331d -lopencv_highgui331d -lopencv_imgcodecs331d \
-    -lopencv_imgproc331d
+macx {
+    INCLUDEPATH += /usr/local/include
+    LIBS     += -L"/usr/local/lib" \
+        -lopencv_core.3.3.1 -lopencv_highgui.3.3.1 -lopencv_imgcodecs.3.3.1 \
+        -lopencv_imgproc.3.3.1
+}
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -36,6 +46,7 @@ SOURCES += main.cpp\
 
 HEADERS  += mainwindow.h \
     recognizer/dialogrecognizer.h \
-    test/test.h
+    test/test.h \
+    define.h
 
 FORMS    += mainwindow.ui
