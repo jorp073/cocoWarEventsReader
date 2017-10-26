@@ -18,6 +18,14 @@ void Test::test_index()
 {
     DialogRecognizer rec;
 
-    QCOMPARE(rec.recognize(imread(RPATH "2of4.png", CV_8UC3), 4), 2);
-    QCOMPARE(rec.recognize(imread(RPATH "3of4.png", CV_8UC3), 4), 3);
+    int index;
+    bool ret;
+
+    ret = rec.recognizePageIndex(imread(RPATH "2of4.png", CV_8UC4), 4, &index);
+    QCOMPARE(ret, true);
+    QCOMPARE(index, 2);
+
+    ret = rec.recognizePageIndex(imread(RPATH "3of4.png", CV_8UC4), 4, &index);
+    QCOMPARE(ret, true);
+    QCOMPARE(index, 3);
 }
