@@ -23,9 +23,9 @@ void Test::test_index()
 
     ret = rec.recognizePageIndex(imread(RPATH "2of4.png", CV_8UC4), 4, &index);
     QCOMPARE(ret, true);
-    QCOMPARE(index, 2);
+    QCOMPARE(index, 1);
 
     ret = rec.recognizePageIndex(imread(RPATH "3of4.png", CV_8UC4), 4, &index);
     QCOMPARE(ret, true);
-    QCOMPARE(index, 3);
+    QCOMPARE(index, 2);
 }

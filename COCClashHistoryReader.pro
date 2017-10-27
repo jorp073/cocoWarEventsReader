@@ -42,11 +42,13 @@ macx {
 SOURCES += main.cpp\
         mainwindow.cpp \
     recognizer/dialogrecognizer.cpp \
-    test/test.cpp
+    test/test.cpp \
+    util/util.cpp
 
 HEADERS  += mainwindow.h \
     recognizer/dialogrecognizer.h \
     test/test.h \
-    define.h
+    define.h \
+    util/util.h
 
 FORMS    += mainwindow.ui
