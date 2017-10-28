@@ -40,4 +40,6 @@ void Test::test_warEventBar()
     rec.findWarEventBars(imread(RPATH "2of4.png", 1), bars);
 
     QCOMPARE((int)bars.size(), 6);
+
+    waitKey(0);
 }

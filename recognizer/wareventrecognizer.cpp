@@ -36,13 +36,18 @@ void WarEventRecognizer::findWarEventBars(cv::Mat img, std::vector<cv::Mat> &bar
     std::vector<std::vector<Rect> > cellRects;
     Util::getCellRectWithoutBorder(bin, 0.6f, 0.7f, 0.6f, 52.0f/905, cellRects);
 
-    for (auto const & rows : cellRects) {
-        for (auto const & rect : rows) {
-            Mat tmp(bin, rect);
-            imshow("tmp", tmp);
-            waitKey(0);
+    for (size_t row=1; row<cellRects.size(); row++) {
+        for (auto const & rect : cellRects[row]) {
+            Mat bar(img, rect);
+            // remove rect top border part
+            const int top = 0.13f * bar.rows;
+            const int bottom = 0.13f * bar.rows;
+            const int left = 0.02f * bar.cols;
+            const int right = 0.02f * bar.cols;
+            bar = Mat(bar, Rect(left, top, bar.cols - left - right, bar.rows - top - bottom));
+            bars.push_back(bar);
+
+            imshow(QString("bar%1").arg(row-1).toStdString(), bar);
         }
     }
-
-    waitKey(0);
 }
