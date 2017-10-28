@@ -15,8 +15,6 @@ public:
 private:
     bool findCloseButton(cv::Mat img, OUT cv::Rect& rect);
     bool _findCloseButtonRect(cv::Mat mat, OUT cv::Rect& rect);
-
-    int getTabBgColor(cv::Mat img);
 };
 
 #endif // DIALOGRECOGNIZER_H

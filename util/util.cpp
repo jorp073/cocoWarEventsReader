@@ -2,6 +2,7 @@
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
 #include <QDebug>
+#include <iostream>
 
 using namespace cv;
 
@@ -32,6 +33,28 @@ void Util::thresholdMinMax(cv::InputArray img, cv::OutputArray bin, double minVa
 {
     threshold(img, bin, maxVal, 0, CV_THRESH_TRUNC);
     threshold(bin, bin, minVal, 255, CV_THRESH_BINARY);
+}
+
+uchar Util::getMainBgGrayColor(Mat ucharGray)
+{
+    // 获取灰度直方图
+    int histSize[] = {256};
+    float hranges[] = { 0, 255};
+    const float* ranges[] = { hranges };
+    MatND hist;
+    int channels[] = {0};
+
+    calcHist( &ucharGray, 1, channels, Mat(), // do not use mask
+             hist, 1, histSize, ranges);
+
+    //waitKey(0);
+
+    double maxVal=0;
+    int maxIdx=-1;
+    minMaxIdx(hist, 0, &maxVal, 0, &maxIdx);
+
+    qDebug() << "maxIdx=" << maxIdx << ", maxVal=" << maxVal;
+    return maxIdx;
 }
 
 void Util::horizonBinProjection(const Mat& src, Mat& dst)
@@ -82,8 +105,8 @@ void Util::getCellRectWithoutBorder(const Mat &bin, float horiBorderMinRatio, fl
     horizonBinProjection(bin, horiProjection);
     verticalBinProjection(bin, vertProjection);
 
-    imshow("horiBorder", horiProjection);
-    imshow("vertBorder", vertProjection);
+    //imshow("horiBorder", horiProjection);
+    //imshow("vertBorder", vertProjection);
 
     auto horiCellSegments = getHoriCellSegments(horiProjection, horiBorderMinRatio, cellMinHeightRatio);
     auto vertCellSegments = getVertCellSegments(vertProjection, vertBorderMinRatio, cellMinWidthRatio);

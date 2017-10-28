@@ -27,12 +27,11 @@ bool DialogRecognizer::recognizePageIndex(cv::Mat img, int pageCount, OUT int* i
     Rect tabbarRect(img.cols - btnRect.tl().x, btnRect.tl().y, 2* btnRect.tl().x - img.cols, btnRect.height);
     Mat tabbar(img, tabbarRect);
 
-    cvtColor(tabbar, tabbar, CV_BGR2HSV_FULL);
+    cvtColor(tabbar, tabbar, CV_BGR2GRAY);
 
     imshow("tabbar", tabbar);
 
     // split tabs
-
     std::vector<Mat> tabs;
     int x = 0, dx = ((float)tabbar.cols)/pageCount + 0.5f;
     for (int i=0; i<pageCount-1; i++) {
@@ -44,8 +43,7 @@ bool DialogRecognizer::recognizePageIndex(cv::Mat img, int pageCount, OUT int* i
     std::vector<double> bgColors;
     for (int i=0; i<pageCount; i++) {
         imshow("tab" + QString('0' + i).toStdString(), tabs[i]);
-
-        bgColors.push_back(getTabBgColor(tabs[i]));
+        bgColors.push_back(Util::getMainBgGrayColor(tabs[i]));
     }
 
     Util::maxDistIdx(bgColors, index);
@@ -133,30 +131,5 @@ bool DialogRecognizer::_findCloseButtonRect(cv::Mat mat, OUT cv::Rect& rect)
     rect = boundRect;
     qDebug() << "rect " << rect.tl().x << "," << rect.tl().y << " "  << rect.br().x << "," << rect.br().y;
     return true;
-}
-
-int DialogRecognizer::getTabBgColor(Mat hsv)
-{
-    //cvtColor(img, hsv, CV_BGR2HSV);
-    // assert(hsv type)
-
-    // Quantize the hue to 30 levels
-    int hbins = 30;
-    int histSize[] = {hbins};
-    // hue varies from 0 to 179, see cvtColor
-    float hranges[] = { 0, 180 };
-    const float* ranges[] = { hranges };
-    MatND hist;
-    // we compute the histogram from the 0-th and 1-st channels
-    int channels[] = {0};
-
-    calcHist( &hsv, 1, channels, Mat(), // do not use mask
-             hist, 1, histSize, ranges,
-             true, // the histogram is uniform
-             false );
-    double maxVal=0;
-    int maxIdx;
-    minMaxIdx(hist, 0, &maxVal, 0, &maxIdx);
-    return maxIdx;
 }
 

@@ -10,6 +10,8 @@ public:
     static void maxDistIdx(const std::vector<double>& values, int* index);
     static void thresholdMinMax(cv::InputArray img, cv::OutputArray bin, double minVal, double maxVal);
 
+    static uchar getMainBgGrayColor(cv::Mat ucharGray);
+
     static void horizonBinProjection(const cv::Mat& src, cv::Mat& dst);
     static void verticalBinProjection(const cv::Mat& src, cv::Mat& dst);
 

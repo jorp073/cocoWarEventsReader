@@ -15,7 +15,7 @@ Test::Test(QObject *parent) : QObject(parent)
 
 }
 
-void Test::test_pageIndex()
+void Test::test_dialogPageIndex()
 {
     return;
     DialogRecognizer rec;
@@ -34,12 +34,38 @@ void Test::test_pageIndex()
 
 void Test::test_warEventBar()
 {
+    return;
     WarEventRecognizer rec;
 
     std::vector<Mat> bars;
-    rec.findWarEventBars(imread(RPATH "2of4.png", 1), bars);
+    rec.findBars(imread(RPATH "2of4.png", 1), bars);
 
     QCOMPARE((int)bars.size(), 6);
+}
 
-    waitKey(0);
+void Test::test_warEventAttackDefense()
+{
+    return;
+    WarEventRecognizer rec;
+
+    std::vector<Mat> bars;
+    rec.findBars(imread(RPATH "2of4.png", 1), bars);
+
+    std::vector<bool> isAttacks = {true, false, false, false, false, true};
+
+    auto iter = isAttacks.begin();
+    for (auto const & bar : bars) {
+        QCOMPARE(rec.isAttack(bar), (bool)*iter);
+        iter++;
+    }
+
+    //waitKey(0);
+}
+
+void Test::test_warEvent()
+{
+    WarEventRecognizer rec;
+
+    bool ret = rec.getData(imread(RPATH "2of4.png", 1));
+    QCOMPARE(ret, true);
 }
