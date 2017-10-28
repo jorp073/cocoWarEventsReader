@@ -50,7 +50,7 @@ bool DialogRecognizer::recognizePageIndex(cv::Mat img, int pageCount, OUT int* i
 
     Util::maxDistIdx(bgColors, index);
 
-    waitKey(0);
+    //waitKey(0);
 
     return true;
 }

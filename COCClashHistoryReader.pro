@@ -43,12 +43,14 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     recognizer/dialogrecognizer.cpp \
     test/test.cpp \
-    util/util.cpp
+    util/util.cpp \
+    recognizer/wareventrecognizer.cpp
 
 HEADERS  += mainwindow.h \
     recognizer/dialogrecognizer.h \
     test/test.h \
     define.h \
-    util/util.h
+    util/util.h \
+    recognizer/wareventrecognizer.h
 
 FORMS    += mainwindow.ui

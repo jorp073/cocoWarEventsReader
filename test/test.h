@@ -11,7 +11,8 @@ public:
 signals:
 
 private slots:
-    void test_index();
+    void test_pageIndex();
+    void test_warEventBar();
 };
 
 #endif // TESTDIALOGRECOGNIZE_H
