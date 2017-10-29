@@ -67,6 +67,7 @@ void Test::test_warEventBarCutHeight()
     WarEventRecognizer rec;
     std::vector<Mat> bars;
     rec.findBars(imread(RPATH "2of4.png", 1), bars);
+
     for (auto const & bar : bars) {
         Mat grayBar;
         cvtColor(bar, grayBar, CV_BGR2GRAY);

@@ -3,8 +3,8 @@
 
 #include <QtGlobal>
 
-#ifdef QT_OS_MAC
-#define RPATH "res/"
+#ifdef Q_OS_MACX
+#define RPATH "../../../../cocWarEventsReader/test/res/"
 #else
 #define RPATH "F:\\workspace\\COCClashHistoryReader\\test\\res\\dialogrecognize\\"
 #endif
