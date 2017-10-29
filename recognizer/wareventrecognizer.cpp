@@ -19,8 +19,22 @@ bool WarEventRecognizer::getData(cv::Mat img)
     std::vector<Mat> bars;
     rec.findBars(imread(RPATH "2of4.png", 1), bars);
 
-    for (auto const & bar : bars) {
+    for (auto & bar : bars) {
         // if (!isAttack(bar)) continue;
+
+        Mat grayBar;
+        cvtColor(bar, grayBar, CV_BGR2GRAY);
+
+        //imshow("grayBar", grayBar);
+
+        int height = scanBarBottomHeight(grayBar);
+
+        int dTop = height-grayBar.rows;
+        bar.adjustROI(dTop, 0, 0, 0);
+        grayBar.adjustROI(dTop, 0, 0, 0);
+        imshow("grayBarCut", grayBar);
+
+        clearBackground(bar, grayBar);
 
         if (parseBar(bar)) {
 
@@ -76,6 +90,66 @@ bool WarEventRecognizer::isAttack(Mat bar)
     qDebug() << "bgColor=" << c;
     bool ret = IS_ATTACK_COLOR(c);
     return ret;
+}
+
+int WarEventRecognizer::scanBarBottomHeight(Mat grayBar)
+{
+    Mat bar90 = grayBar.clone();
+    Util::rotateClockWise90(bar90);
+    imshow("bar90", bar90);
+
+    int channels = bar90.channels();
+    Q_ASSERT(channels == 1);
+    int nRows = bar90.rows;
+    int nCols = bar90.cols;
+
+    std::vector<double> heightsCount;
+    for (int j=0; j<=nCols; j++) {
+        heightsCount.push_back(0);
+    }
+
+    uchar *p;
+    for( int i = 0; i < nRows; ++i )
+    {
+        p =  bar90.ptr<uchar>(i);
+        int j=0;
+        for(; j < nCols; ++j )
+        {
+            uchar c = p[j];
+            if (c != EVENTBAR_ATTACK_BGCOLOR && c != EVENTBAR_DEFENSE_BGCOLOR) {
+                heightsCount[j] ++;
+                break;
+            }
+        }
+        if (j == nCols) {
+            heightsCount[nCols] ++;
+        }
+    }
+
+    for (int j=0; j<=nCols; j++) {
+        //qDebug() << "heightsCount[" << j << "]=" << heightsCount[j];
+    }
+
+    double maxVal = 0;
+    int maxIdx;
+    minMaxIdx(Mat(heightsCount), NULL, &maxVal, NULL, &maxIdx);
+
+    return maxIdx;
+}
+
+void WarEventRecognizer::clearBackground(Mat bar, Mat grayBar)
+{
+    Mat bin;
+    Mat lookupTable(1, 256, CV_8U);
+    uchar* p = lookupTable.data;
+    for (int i = 0; i < 256; i++)
+    {
+        p[i] = (i == EVENTBAR_ATTACK_BGCOLOR || i == EVENTBAR_DEFENSE_BGCOLOR) ? 0 : 255;
+    }
+
+    LUT(grayBar, lookupTable, bin);
+    imshow("bin", bin);
+    waitKey(0);
 }
 
 bool WarEventRecognizer::parseBar(Mat bar)

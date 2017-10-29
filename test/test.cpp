@@ -62,6 +62,25 @@ void Test::test_warEventAttackDefense()
     //waitKey(0);
 }
 
+void Test::test_warEventBarCutHeight()
+{
+    WarEventRecognizer rec;
+    std::vector<Mat> bars;
+    rec.findBars(imread(RPATH "2of4.png", 1), bars);
+    for (auto const & bar : bars) {
+        Mat grayBar;
+        cvtColor(bar, grayBar, CV_BGR2GRAY);
+
+        imshow("grayBar", grayBar);
+        //imwrite(RPATH "bar_gray.bmp", grayBar);
+
+        int height = rec.scanBarBottomHeight(grayBar);
+        qDebug() << "height=" << height;
+
+        QVERIFY( height>=51 && height <=53);
+    }
+}
+
 void Test::test_warEvent()
 {
     WarEventRecognizer rec;

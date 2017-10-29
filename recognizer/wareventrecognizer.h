@@ -16,6 +16,10 @@ private:
 
     bool isAttack(cv::Mat bar);
 
+    int scanBarBottomHeight(cv::Mat grayBar);
+
+    void clearBackground(cv::Mat bar, cv::Mat grayBar);
+
     bool parseBar(cv::Mat bar);
 
     friend class Test;

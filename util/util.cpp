@@ -190,4 +190,13 @@ std::vector<cv::Point2i> Util::getVertCellSegments(const cv::Mat& vertProjection
     return segments;
 }
 
+// http://blog.csdn.net/tianzhaixing2013/article/details/53037474
+void Util::rotateClockWise90(Mat &src)
+{
+    if (src.empty()) return;
+    transpose(src, src);
+    //0: 沿X轴翻转； >0: 沿Y轴翻转； <0: 沿X轴和Y轴翻转
+    flip(src, src, 1);
+}
+
 

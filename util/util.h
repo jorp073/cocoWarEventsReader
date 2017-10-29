@@ -22,6 +22,8 @@ public:
             std::vector<std::vector<cv::Rect> >& cellRects);
     static std::vector<cv::Point2i> getHoriCellSegments(const cv::Mat& horiProjection, float horiBorderMinRatio, float cellMinHeightRatio);
     static std::vector<cv::Point2i> getVertCellSegments(const cv::Mat& vertProjection, float vertBorderMinRatio, float cellMinWidthRatio);
+
+    static void rotateClockWise90(cv::Mat &src);
 };
 
 #endif // UTIL_H
