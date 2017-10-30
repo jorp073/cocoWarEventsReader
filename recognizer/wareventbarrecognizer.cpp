@@ -31,30 +31,21 @@ bool WarEventBarRecognizer::recognize(Mat bar)
     Mat binBar;
     clearBackground(bar, grayBar, binBar);
 
-    Rect flagRect1, flagRect2, attackArrowRect, playButtonRect;
-    if (!filterObjects(binBar, flagRect1, flagRect2, attackArrowRect, playButtonRect)) {
+    map<int, Rect> objectRects;
+    if (!getSegments(binBar, objectRects)) {
         return false;
     }
 
-    // get 3 valuable parts
-    Mat ourWarrior(bar, Rect(0, 0, flagRect1.x, bar.rows));
-
-    Mat stars;
-    int flagCenterX = (flagRect1.x + flagRect2.x + flagRect2.width)/2;
-    if (attackArrowRect.x < flagCenterX) {
-        stars = Mat(bar, Rect(attackArrowRect.x + attackArrowRect.width,
-                            0, flagRect2.x - attackArrowRect.x - attackArrowRect.width, bar.rows));
-    } else {
-        stars = Mat(bar, Rect(flagRect1.x + flagRect1.width,
-                            0, attackArrowRect.x - flagRect1.x - flagRect1.width, bar.rows));
+    // get parts
+    vector<Mat> parts;
+    for (size_t i=0; i<objectRects.size(); i++) {
+        auto rect = objectRects[i];
+        parts.push_back(Mat(bar, Rect(rect.x, rect.y, rect.width, rect.height)));
     }
 
-    Mat enemyWarrior(bar, Rect(flagRect2.x + flagRect2.width, 0,
-                               playButtonRect.x - flagRect2.x - flagRect2.width, bar.rows));
-
-    imshow("ourWarrior", ourWarrior);
-    imshow("stars", stars);
-    imshow("enemyWarrior", enemyWarrior);
+    imshow("ourWarrior", parts[0]);
+    imshow("stars", parts[1]);
+    imshow("enemyWarrior", parts[2]);
 
     waitKey(0);
     return true;
@@ -134,8 +125,7 @@ void WarEventBarRecognizer::clearBackground(Mat bar, Mat grayBar, cv::OutputArra
     //imwrite(RPATH "sample.png", binBar);
 }
 
-bool WarEventBarRecognizer::filterObjects(Mat &binbar, Rect &flagRect1, Rect &flagRect2,
-                                          Rect &attackArrowRect, Rect &playButtonRect)
+bool WarEventBarRecognizer::getSegments(Mat &binBar,  std::map<int, cv::Rect> &objectRects)
 {
     // 利用形状匹配查找部落旗帜
     // 最高的是进攻箭头
@@ -143,9 +133,11 @@ bool WarEventBarRecognizer::filterObjects(Mat &binbar, Rect &flagRect1, Rect &fl
 
     vector<vector<Point>> contours;
     vector<Vec4i> hierarcy;
-    findContours(binbar, contours, hierarcy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
+    findContours(binBar, contours, hierarcy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
 
-    if (contours.size() < 6) return false;
+    if (contours.size() < 6) {
+        return false;
+    }
 
     double minMatchVal[] = {1e20, 1e20};
     int minMatchIdx[] = {0, 0};
@@ -189,18 +181,88 @@ bool WarEventBarRecognizer::filterObjects(Mat &binbar, Rect &flagRect1, Rect &fl
         }
     }
 
+    /// 4 splitter rects
+    vector<Rect> splitters;
+
     // flag rects
-    flagRect1 = boundingRects[minMatchIdx[0]];
-    flagRect2 = boundingRects[minMatchIdx[1]];
+    Rect flagRect1 = boundingRects[minMatchIdx[0]];
+    Rect flagRect2 = boundingRects[minMatchIdx[1]];
     if (flagRect1.x > flagRect2.x) {
         swap(flagRect1, flagRect2);
     }
+    splitters.push_back(flagRect1);
 
     // attack arrow rect
-    attackArrowRect = boundingRects[maxHeightIdx];
+    Rect attackArrowRect = boundingRects[maxHeightIdx];
+    splitters.push_back(attackArrowRect);
+
+    splitters.push_back(flagRect2);
 
     // play button rect
-    playButtonRect = boundingRects[maxRightIdx];
+    Rect playButtonRect = boundingRects[maxRightIdx];
+    splitters.push_back(playButtonRect);
+
+    for (size_t i=0; i<splitters.size()-1; i++) {
+        if (splitters[i].x + splitters[i].width >= splitters[i+1].x) {
+            // splitter overlapped
+            return false;
+        }
+    }
+
+    /// 3 parts
+    vector<Point2i> parts;
+
+    // our warrior rect
+    parts.push_back(Point2i(0, flagRect1.x));
+
+    // stars rect
+    int flagCenterX = (flagRect1.x + flagRect2.x + flagRect2.width)/2;
+    if (attackArrowRect.x < flagCenterX) {
+        parts.push_back(Point2i(attackArrowRect.x + attackArrowRect.width, flagRect2.x));
+    } else {
+        parts.push_back(Point2i(flagRect1.x + flagRect1.width, attackArrowRect.x));
+    }
+
+    // enemy warrior rect
+    parts.push_back(Point2i(flagRect2.x + flagRect2.width, playButtonRect.x));
+
+    /// zip segments
+    for (size_t i=0; i<parts.size(); i++) {
+        objectRects[i] = Rect(binBar.cols + 1, binBar.rows + 1, -binBar.cols-2, -binBar.rows-2);
+        Q_ASSERT(objectRects[i].br().x < 0);
+        Q_ASSERT(objectRects[i].br().y < 0);
+    }
+
+    for (auto const & boundingRect : boundingRects) {
+        for (size_t i=0; i<parts.size(); i++) {
+            bool inside = boundingRect.x > parts[i].x && boundingRect.br().x < parts[i].y;
+            if (inside) {
+                auto & rect = objectRects[i];
+                if (boundingRect.x < rect.x) {
+                    rect.width += rect.x - boundingRect.x;
+                    rect.x = boundingRect.x;
+                }
+                if (boundingRect.y < rect.y) {
+                    rect.height += rect.y - boundingRect.y;
+                    rect.y = boundingRect.y;
+                }
+                if (boundingRect.br().x > rect.br().x) {
+                    rect.width = boundingRect.br().x - rect.x;
+                }
+                if (boundingRect.br().y > rect.br().y) {
+                    rect.height = boundingRect.br().y - rect.y;
+                }
+            }
+        }
+    }
+
+    for (size_t i=0; i<objectRects.size(); i++) {
+        auto rect = objectRects[i];
+        if (rect.x<0 || rect.y<0 || rect.br().x >= binBar.cols || rect.br().y >= binBar.rows) {
+            // the objectRect has no objects;
+            return false;
+        }
+    }
 
     return true;
 }

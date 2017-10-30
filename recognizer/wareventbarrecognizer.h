@@ -3,6 +3,7 @@
 
 #include "opencv2/core.hpp"
 #include "define.h"
+#include <map>
 
 class WarEventBarRecognizer
 {
@@ -18,8 +19,7 @@ private:
 
     void clearBackground(cv::Mat bar, cv::Mat grayBar, cv::OutputArray binBar);
 
-    bool filterObjects(cv::Mat &binbar, cv::Rect &flagRect1, cv::Rect &flagRect2,
-                       cv::Rect &attackArrowRect, cv::Rect &playButtonRect);
+    bool getSegments(cv::Mat &binBar, std::map<int, cv::Rect> &objectRects);
 
     friend class Test;
 };
