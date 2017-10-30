@@ -5,6 +5,7 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "define.h"
 #include "recognizer/wareventrecognizer.h"
+#include "recognizer/wareventbarrecognizer.h"
 
 using namespace cv;
 
@@ -47,6 +48,7 @@ void Test::test_warEventAttackDefense()
 {
     return;
     WarEventRecognizer rec;
+    WarEventBarRecognizer barRec;
 
     std::vector<Mat> bars;
     rec.findBars(imread(RPATH "2of4.png", 1), bars);
@@ -55,7 +57,7 @@ void Test::test_warEventAttackDefense()
 
     auto iter = isAttacks.begin();
     for (auto const & bar : bars) {
-        QCOMPARE(rec.isAttack(bar), (bool)*iter);
+        QCOMPARE(barRec.isAttack(bar), (bool)*iter);
         iter++;
     }
 
@@ -65,6 +67,8 @@ void Test::test_warEventAttackDefense()
 void Test::test_warEventBarCutHeight()
 {
     WarEventRecognizer rec;
+    WarEventBarRecognizer barRec;
+
     std::vector<Mat> bars;
     rec.findBars(imread(RPATH "2of4.png", 1), bars);
 
@@ -75,7 +79,7 @@ void Test::test_warEventBarCutHeight()
         imshow("grayBar", grayBar);
         //imwrite(RPATH "bar_gray.bmp", grayBar);
 
-        int height = rec.scanBarBottomHeight(grayBar);
+        int height = barRec.scanBarBottomHeight(grayBar);
         qDebug() << "height=" << height;
 
         QVERIFY( height>=51 && height <=53);
@@ -86,6 +90,6 @@ void Test::test_warEvent()
 {
     WarEventRecognizer rec;
 
-    bool ret = rec.getData(imread(RPATH "2of4.png", 1));
+    bool ret = rec.recognize(imread(RPATH "2of4.png", 1));
     QCOMPARE(ret, true);
 }

@@ -9,18 +9,10 @@ class WarEventRecognizer
 public:
     WarEventRecognizer();
 
-    bool getData(cv::Mat img);
+    bool recognize(cv::Mat dialog);
 
 private:
     void findBars(cv::Mat img, OUT std::vector<cv::Mat>& bars);
-
-    bool isAttack(cv::Mat bar);
-
-    int scanBarBottomHeight(cv::Mat grayBar);
-
-    void clearBackground(cv::Mat bar, cv::Mat grayBar);
-
-    bool parseBar(cv::Mat bar);
 
     friend class Test;
 };
