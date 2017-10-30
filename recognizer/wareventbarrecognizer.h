@@ -9,7 +9,7 @@ class WarEventBarRecognizer
 public:
     WarEventBarRecognizer();
 
-    void recognize(cv::Mat bar);
+    bool recognize(cv::Mat bar);
 
 private:
     bool isAttack(cv::Mat bar);
@@ -18,7 +18,8 @@ private:
 
     void clearBackground(cv::Mat bar, cv::Mat grayBar, cv::OutputArray binBar);
 
-    void clearFlags(cv::Mat& binbar);
+    bool filterObjects(cv::Mat &binbar, cv::Rect &flagRect1, cv::Rect &flagRect2,
+                       cv::Rect &attackArrowRect, cv::Rect &playButtonRect);
 
     friend class Test;
 };

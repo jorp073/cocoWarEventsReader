@@ -14,7 +14,7 @@ WarEventBarRecognizer::WarEventBarRecognizer()
 
 }
 
-void WarEventBarRecognizer::recognize(Mat bar)
+bool WarEventBarRecognizer::recognize(Mat bar)
 {
     Mat grayBar;
     cvtColor(bar, grayBar, CV_BGR2GRAY);
@@ -31,9 +31,33 @@ void WarEventBarRecognizer::recognize(Mat bar)
     Mat binBar;
     clearBackground(bar, grayBar, binBar);
 
-    clearFlags(binBar);
+    Rect flagRect1, flagRect2, attackArrowRect, playButtonRect;
+    if (!filterObjects(binBar, flagRect1, flagRect2, attackArrowRect, playButtonRect)) {
+        return false;
+    }
+
+    // get 3 valuable parts
+    Mat ourWarrior(bar, Rect(0, 0, flagRect1.x, bar.rows));
+
+    Mat stars;
+    int flagCenterX = (flagRect1.x + flagRect2.x + flagRect2.width)/2;
+    if (attackArrowRect.x < flagCenterX) {
+        stars = Mat(bar, Rect(attackArrowRect.x + attackArrowRect.width,
+                            0, flagRect2.x - attackArrowRect.x - attackArrowRect.width, bar.rows));
+    } else {
+        stars = Mat(bar, Rect(flagRect1.x + flagRect1.width,
+                            0, attackArrowRect.x - flagRect1.x - flagRect1.width, bar.rows));
+    }
+
+    Mat enemyWarrior(bar, Rect(flagRect2.x + flagRect2.width, 0,
+                               playButtonRect.x - flagRect2.x - flagRect2.width, bar.rows));
+
+    imshow("ourWarrior", ourWarrior);
+    imshow("stars", stars);
+    imshow("enemyWarrior", enemyWarrior);
 
     waitKey(0);
+    return true;
 }
 
 bool WarEventBarRecognizer::isAttack(Mat bar)
@@ -54,7 +78,7 @@ int WarEventBarRecognizer::scanBarBottomHeight(Mat grayBar)
 {
     Mat bar90 = grayBar.clone();
     Util::rotateClockWise90(bar90);
-    imshow("bar90", bar90);
+    //imshow("bar90", bar90);
 
     int channels = bar90.channels();
     Q_ASSERT(channels == 1);
@@ -110,14 +134,29 @@ void WarEventBarRecognizer::clearBackground(Mat bar, Mat grayBar, cv::OutputArra
     //imwrite(RPATH "sample.png", binBar);
 }
 
-void WarEventBarRecognizer::clearFlags(Mat& binbar)
+bool WarEventBarRecognizer::filterObjects(Mat &binbar, Rect &flagRect1, Rect &flagRect2,
+                                          Rect &attackArrowRect, Rect &playButtonRect)
 {
+    // 利用形状匹配查找部落旗帜
+    // 最高的是进攻箭头
+    // 最右边的是播放按钮
+
     vector<vector<Point>> contours;
     vector<Vec4i> hierarcy;
     findContours(binbar, contours, hierarcy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
 
+    if (contours.size() < 6) return false;
+
     double minMatchVal[] = {1e20, 1e20};
     int minMatchIdx[] = {0, 0};
+
+    vector<Rect> boundingRects;
+
+    double maxRightVal = 0;
+    int maxRightIdx;
+
+    double maxHeightVal = 0;
+    int maxHeightIdx;
 
     for (size_t i=0; i<contours.size(); i++) {
         double match = Sample::instance().compareFlagContour(contours[i]);
@@ -134,12 +173,34 @@ void WarEventBarRecognizer::clearFlags(Mat& binbar)
                 minMatchVal[1] = match;
             }
         }
+
+        auto rect = boundingRect(contours[i]);
+        boundingRects.push_back(rect);
+
+        int rectRight = rect.x + rect.width;
+        if (rectRight > maxRightVal) {
+            maxRightVal = rectRight;
+            maxRightIdx = i;
+        }
+
+        if (rect.height > maxHeightVal) {
+            maxHeightVal = rect.height;
+            maxHeightIdx = i;
+        }
     }
 
-    //将轮廓内部填充为黑色，其他区域为黑色：
-    for (int i=0; i<2; i++) {
-        drawContours(binbar, contours, minMatchIdx[i],  CV_RGB(0,0,0), CV_FILLED);
+    // flag rects
+    flagRect1 = boundingRects[minMatchIdx[0]];
+    flagRect2 = boundingRects[minMatchIdx[1]];
+    if (flagRect1.x > flagRect2.x) {
+        swap(flagRect1, flagRect2);
     }
 
-    imshow("clearFlags", binbar);
+    // attack arrow rect
+    attackArrowRect = boundingRects[maxHeightIdx];
+
+    // play button rect
+    playButtonRect = boundingRects[maxRightIdx];
+
+    return true;
 }

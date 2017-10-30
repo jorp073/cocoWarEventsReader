@@ -23,7 +23,9 @@ bool WarEventRecognizer::recognize(cv::Mat dialog)
 
     for (auto & bar : bars) {
         // if (!isAttack(bar)) continue;
-        barRec.recognize(bar);
+        if (!barRec.recognize(bar)) {
+            return false;
+        }
     }
 
     return true;
