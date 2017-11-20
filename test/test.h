@@ -15,6 +15,7 @@ private slots:
     void test_warEventBar();
     void test_warEventAttackDefense();
     void test_warEventBarCutHeight();
+    void test_warEventStars();
     void test_warEvent();
 };
 

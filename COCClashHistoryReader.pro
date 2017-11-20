@@ -6,6 +6,7 @@
 
 QT       += core gui
 QT       += testlib
+CONFIG += c++11
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -46,7 +47,8 @@ SOURCES += main.cpp\
     util/util.cpp \
     recognizer/wareventrecognizer.cpp \
     recognizer/sample.cpp \
-    recognizer/wareventbarrecognizer.cpp
+    recognizer/wareventbarrecognizer.cpp \
+    recognizer/wareventstarsrecognizer.cpp
 
 HEADERS  += mainwindow.h \
     recognizer/dialogrecognizer.h \
@@ -55,6 +57,7 @@ HEADERS  += mainwindow.h \
     util/util.h \
     recognizer/wareventrecognizer.h \
     recognizer/sample.h \
-    recognizer/wareventbarrecognizer.h
+    recognizer/wareventbarrecognizer.h \
+    recognizer/wareventstarsrecognizer.h
 
 FORMS    += mainwindow.ui

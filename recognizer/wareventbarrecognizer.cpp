@@ -5,6 +5,7 @@
 #include "util/util.h"
 #include <QDebug>
 #include "sample.h"
+#include "wareventstarsrecognizer.h"
 
 using namespace cv;
 using namespace std;
@@ -40,12 +41,21 @@ bool WarEventBarRecognizer::recognize(Mat bar)
     vector<Mat> parts;
     for (size_t i=0; i<objectRects.size(); i++) {
         auto rect = objectRects[i];
-        parts.push_back(Mat(bar, Rect(rect.x, rect.y, rect.width, rect.height)));
+        parts.push_back(Mat(grayBar, Rect(rect.x, rect.y, rect.width, rect.height)));
     }
 
     imshow("ourWarrior", parts[0]);
     imshow("stars", parts[1]);
+    imwrite(RPATH "stars_part.png", parts[1]);
     imshow("enemyWarrior", parts[2]);
+
+    WarEventStarsRecognizer starsRec;
+    int stars;
+    if (!starsRec.recognize(parts[1], &stars)) {
+        return false;
+    }
+
+    qDebug() << "stars=" << stars;
 
     waitKey(0);
     return true;
