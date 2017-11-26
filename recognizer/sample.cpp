@@ -2,6 +2,8 @@
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
 #include "define.h"
+#include <QFile>
+#include <QDebug>
 
 using namespace cv;
 using namespace std;
@@ -25,7 +27,13 @@ double Sample::compareFlagContour(std::vector<cv::Point> contour)
 void Sample::initFlagContour()
 {
     // findContours supports CV_8UC1
-    Mat bin = imread(SPATH "flag_contour.png", CV_8UC1);
+    auto filepath = SPATH "flag_contour.png";
+    if (!QFile::exists(filepath)) {
+        qDebug() << "err: file not exists: " << filepath;
+        return;
+    }
+
+    Mat bin = imread(filepath, CV_8UC1);
     imshow("flag_contour", bin);
     vector<vector<Point>> contours;
     vector<Vec4i> hierarcy;
