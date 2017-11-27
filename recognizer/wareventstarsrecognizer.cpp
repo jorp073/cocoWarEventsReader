@@ -17,10 +17,12 @@ bool WarEventStarsRecognizer::recognize(cv::Mat grayImg, int* stars)
 {
     vector<float> rxs = {0.18f, 0.5f, 0.82f};
     auto p = grayImg.ptr<uchar>(0);
+    Q_ASSERT(p != NULL);
     vector<uchar> colors;
 
-    auto pushColor = [&](auto rx) {
-        colors.push_back(p[(int)(grayImg.cols * rx)]);
+    auto pushColor = [&](float rx) {
+        int index = grayImg.cols * rx;
+        colors.push_back(p[index]);
     };
 
     for_each(rxs.begin(), rxs.end(), pushColor);
@@ -34,7 +36,7 @@ bool WarEventStarsRecognizer::recognize(cv::Mat grayImg, int* stars)
         if (isStar) (*stars)++;
     }
 
-    if (!isStars[1] && isStars[2] || !isStars[0] && isStars[1]) {
+    if ((!isStars[1] && isStars[2]) || (!isStars[0] && isStars[1])) {
         return false;
     }
 
