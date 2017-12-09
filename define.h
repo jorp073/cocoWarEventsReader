@@ -4,7 +4,7 @@
 #include <QtGlobal>
 
 #ifdef Q_OS_MACX
-#define RPATH "test/res/"
+#define RPATH "test/res/dialogrecognize/"
 #define SPATH "res/sample/"
 #else
 #define RPATH "F:\\workspace\\COCClashHistoryReader\\test\\res\\dialogrecognize\\"
