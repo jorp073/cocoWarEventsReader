@@ -10,11 +10,13 @@ class WarEventStarsRecognizer
 public:
     WarEventStarsRecognizer();
 
-    bool recognize(cv::Mat grayImg, int* stars);
+    bool recognize(cv::Mat grayBar, cv::Mat binBar, cv::Rect starsRect, int* stars);
 
 private:
 
     bool isStarColor(uchar color);
+
+    bool isRectStar(cv::Mat grayBar, cv::Mat binBar, cv::Rect starRect);
 };
 
 #endif // WAREVENTSTARSRECOGNIZER_H

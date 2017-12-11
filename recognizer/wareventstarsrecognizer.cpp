@@ -13,32 +13,24 @@ WarEventStarsRecognizer::WarEventStarsRecognizer()
 
 }
 
-bool WarEventStarsRecognizer::recognize(cv::Mat grayImg, int* stars)
+bool WarEventStarsRecognizer::recognize(cv::Mat grayBar, cv::Mat binBar, cv::Rect starsRect, int* stars)
 {
-    vector<float> rxs = {0.18f, 0.5f, 0.82f};
-    auto p = grayImg.ptr<uchar>(0);
-    Q_ASSERT(p != NULL);
-    vector<uchar> colors;
+    int ret = 0;
+    bool isLastStar = true;
+    int starWidth = starsRect.width/3;
+    for (int i=0; i<3; i++) {
+        Rect starRect(starsRect.x + starWidth*i, starsRect.y, starWidth, starsRect.y + starsRect.height/2);
+        bool isStar = isRectStar(grayBar, binBar, starRect);
 
-    auto pushColor = [&](float rx) {
-        int index = grayImg.cols * rx;
-        colors.push_back(p[index]);
-    };
+        if (!isLastStar && isStar) {
+            return false;
+        }
+        isLastStar = isStar;
 
-    for_each(rxs.begin(), rxs.end(), pushColor);
-
-    vector<bool> isStars;
-    *stars = 0;
-    for (auto iter = colors.begin(); iter != colors.end(); ++iter) {
-        qDebug() << "starColor=" << *iter;
-        bool isStar = isStarColor(*iter);
-        isStars.push_back(isStar);
-        if (isStar) (*stars)++;
+        if (isStar) ret++;
     }
 
-    if ((!isStars[1] && isStars[2]) || (!isStars[0] && isStars[1])) {
-        return false;
-    }
+    *stars = ret;
 
     return true;
 }
@@ -59,4 +51,49 @@ bool WarEventStarsRecognizer::isStarColor(uchar color)
     }
 
     return minIdx == HIGHTLIGHT || minIdx == STAR;
+}
+
+bool WarEventStarsRecognizer::isRectStar(Mat grayBar, Mat binBar, Rect starRect)
+{
+    qDebug() << "binBar depth=" << binBar.depth() << "type=" << binBar.type() << "channels=" << binBar.channels();
+
+    Mat gStar = Mat(grayBar, starRect);
+    imshow("starRectGray", gStar);
+    Mat bStar = Mat(binBar, starRect);
+    imshow("starRectBin", bStar);
+    qDebug() << "bStar depth=" << bStar.depth() << "type=" << bStar.type() << "channels=" << bStar.channels();
+
+    int erosion_size = 4;
+    int erosion_type = MORPH_ELLIPSE; // MORPH_CROSS, MORPH_ELLIPSE
+    Mat element = getStructuringElement( erosion_type,
+                                           Size( 2*erosion_size + 1, 2*erosion_size+1 ),
+                                           Point( erosion_size, erosion_size ) );
+    erode(bStar, bStar, element);
+    imshow("starRectBinErode", bStar);
+    waitKey(0);
+
+    int width = bStar.cols;
+    int height = bStar.rows;
+
+    int i, j;
+    const uchar *gray;
+    const uchar *bin;
+
+    int starMore = 0;
+    for(i = 0; i < height; i++){
+        gray = gStar.ptr<uchar>(i);
+        bin = bStar.ptr<uchar>(i);
+        for(j = 0; j < width; j++){
+            if (bin[j] > 0) {
+                if (isStarColor(gray[j])) {
+                    starMore++;
+                } else {
+                    starMore--;
+                }
+            }
+        }
+    }
+
+    qDebug() << "starMore=" << starMore;
+    return starMore > 0;
 }

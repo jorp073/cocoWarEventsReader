@@ -39,19 +39,33 @@ bool WarEventBarRecognizer::recognize(Mat bar)
 
     // get parts
     vector<Mat> parts;
+    Rect starsRect;
     for (size_t i=0; i<objectRects.size(); i++) {
         auto rect = objectRects[i];
-        parts.push_back(Mat(grayBar, Rect(rect.x, rect.y, rect.width, rect.height)));
+        parts.push_back(Mat(grayBar, rect));
+
+        if (1 == i) {
+            starsRect = rect;
+        }
     }
 
     imshow("ourWarrior", parts[0]);
     imshow("stars", parts[1]);
-    imwrite(RPATH "stars_part.png", parts[1]);
     imshow("enemyWarrior", parts[2]);
+
+    { // only for debug
+        static int i=0;
+        i++;
+        //imwrite(RPATH "bar/input.png", bar);
+        //imwrite(RPATH "bar/output_stars_part.png", parts[1]);
+        //imwrite(QString(RPATH "star/grayBar%1.png").arg(i).toStdString().c_str(), grayBar);
+        //imwrite(QString(RPATH "star/binBar%1.png").arg(i).toStdString().c_str(), binBar);
+        qDebug() << "starsRect" << i << "=" << starsRect.x << ',' << starsRect.y << ',' << starsRect.width << ',' << starsRect.height;
+    }
 
     WarEventStarsRecognizer starsRec;
     int stars;
-    if (!starsRec.recognize(parts[1], &stars)) {
+    if (!starsRec.recognize(grayBar, binBar, starsRect, &stars)) {
         return false;
     }
 

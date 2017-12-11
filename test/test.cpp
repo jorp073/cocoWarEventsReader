@@ -26,11 +26,11 @@ void Test::test_dialogPageIndex()
     int index;
     bool ret;
 
-    ret = rec.recognizePageIndex(imread(RPATH "2of4.png", 1), 4, &index);
+    ret = rec.recognizePageIndex(imread(RPATH "dialog/2of4.png", 1), 4, &index);
     QCOMPARE(ret, true);
     QCOMPARE(index, 1);
 
-    ret = rec.recognizePageIndex(imread(RPATH "3of4.png", 1), 4, &index);
+    ret = rec.recognizePageIndex(imread(RPATH "dialog/3of4.png", 1), 4, &index);
     QCOMPARE(ret, true);
     QCOMPARE(index, 2);
 }
@@ -41,7 +41,7 @@ void Test::test_warEventBar()
     WarEventRecognizer rec;
 
     vector<Mat> bars;
-    rec.findBars(imread(RPATH "2of4.png", 1), bars);
+    rec.findBars(imread(RPATH "dialog/2of4.png", 1), bars);
 
     QCOMPARE((int)bars.size(), 6);
 }
@@ -53,7 +53,7 @@ void Test::test_warEventAttackDefense()
     WarEventBarRecognizer barRec;
 
     vector<Mat> bars;
-    rec.findBars(imread(RPATH "2of4.png", 1), bars);
+    rec.findBars(imread(RPATH "dialog/2of4.png", 1), bars);
 
     vector<bool> isAttacks = {true, false, false, false, false, true};
 
@@ -72,7 +72,7 @@ void Test::test_warEventBarCutHeight()
     WarEventBarRecognizer barRec;
 
     vector<Mat> bars;
-    rec.findBars(imread(RPATH "2of4.png", 1), bars);
+    rec.findBars(imread(RPATH "dialog/2of4.png", 1), bars);
 
     for (auto const & bar : bars) {
         Mat grayBar;
@@ -90,22 +90,36 @@ void Test::test_warEventBarCutHeight()
 
 void Test::test_warEventStars()
 {
-    const map<QString, int> starsSample = {
-        {"stars_0.png", 0},
-        {"stars_1.png", 1},
-        {"stars_1_2.png", 1},
-        {"stars_1_3.png", 1},
-        {"stars_3.png", 3},
+    const Rect RECTS[] = {
+        Rect(501 , 0 , 106 , 41),
+        Rect(510 , 0 , 97 , 40),
+        Rect(501 , 0 , 111 , 40),
+        Rect(502 , 0 , 105 , 40),
+        Rect(510 , 0 , 97 , 40),
+        Rect(508 , 0 , 99 , 40),
+    };
+
+    const int STARS[] = {
+        1,
+        0,
+        3,
+        1,
+        0,
+        1,
     };
 
     WarEventStarsRecognizer rec;
-    for (auto iter = starsSample.begin(); iter != starsSample.end(); ++iter) {
-        const QString path = RPATH + iter->first;
-        qDebug() << "stars: " << path;
+    for (size_t i=0; i<sizeof(STARS) / sizeof(int); i++) {
+        const QString grayBarPath = QString(RPATH "star/grayBar%1.png").arg(i+1);
+        qDebug() << "grayBarPath: " << grayBarPath;
         int stars = 0;
-        bool ret = rec.recognize(imread(path.toStdString(), 1), &stars);
+
+        const QString binBarPath = QString(RPATH "star/binBar%1.png").arg(i+1);
+        bool ret = rec.recognize(imread(grayBarPath.toStdString(), IMREAD_GRAYSCALE),
+                                 imread(binBarPath.toStdString(), IMREAD_GRAYSCALE),
+                                 RECTS[i], &stars);
         QCOMPARE(ret, true);
-        QCOMPARE(stars, iter->second);
+        QCOMPARE(stars, STARS[i]);
     }
 }
 
