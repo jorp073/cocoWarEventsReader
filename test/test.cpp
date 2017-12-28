@@ -8,6 +8,7 @@
 #include "recognizer/wareventbarrecognizer.h"
 #include "recognizer/wareventstarsrecognizer.h"
 #include <QDebug>
+#include "util/util.h"
 
 using namespace cv;
 using namespace std;
@@ -44,6 +45,17 @@ void Test::test_warEventBar()
     rec.findBars(imread(RPATH "dialog/2of4.png", 1), bars);
 
     QCOMPARE((int)bars.size(), 6);
+}
+
+void Test::test_warEventBarRemoveBg()
+{
+    WarEventBarRecognizer rec;
+    Mat grayBar = imread(RPATH "bar/grayBar1.png", IMREAD_GRAYSCALE);
+    imshow("bar", grayBar);
+    Mat bgColor = Util::getHoriProjectionBgColor(grayBar);
+    Util::removeHoriProjectionBg(grayBar, bgColor);
+    imshow("bar remove bg", grayBar);
+    waitKey();
 }
 
 void Test::test_warEventAttackDefense()

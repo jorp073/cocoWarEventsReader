@@ -13,6 +13,7 @@ signals:
 private slots:
     void test_dialogPageIndex();
     void test_warEventBar();
+    void test_warEventBarRemoveBg();
     void test_warEventAttackDefense();
     void test_warEventBarCutHeight();
     void test_warEventStars();

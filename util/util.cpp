@@ -98,6 +98,71 @@ void Util::verticalBinProjection(const Mat& src, Mat& dst)
     }
 }
 
+Mat Util::getHoriProjectionBgColor(Mat gray)
+{
+    int channels = gray.channels();
+    Q_ASSERT(channels == 1);
+    int nRows = gray.rows;
+    int nCols = gray.cols;
+
+    Mat ret(Size(2, nRows), CV_8UC1);
+
+    uchar *p;
+    for( int i = 0; i < nRows; ++i )
+    {
+        int count[256] = {0};
+        int maxIdx = -1, maxIdx2 = -1;
+        int maxVal = -1, maxVal2 = -1;
+        p = gray.ptr<uchar>(i);
+        for(int j=0; j < nCols; ++j )
+        {
+            uchar c = p[j];
+            int val = ++count[c];
+            if (val > maxVal)
+            {
+                if (c != maxIdx)
+                {
+                    maxVal2 = maxVal;
+                    maxIdx2 = maxIdx;
+                    maxIdx = c;
+                }
+                maxVal = val;
+            }
+            else if (val > maxVal2)
+            {
+                maxVal2 = val;
+                maxIdx2 = c;
+            }
+        }
+        ret.ptr<uchar>(i)[0] = maxIdx;
+        ret.ptr<uchar>(i)[1] = maxIdx2;
+        qDebug() << "row=" << i << " c=" << maxIdx << " " << maxIdx2;
+    }
+
+    return ret;
+}
+
+void Util::removeHoriProjectionBg(Mat gray, Mat bgColor)
+{
+    int channels = gray.channels();
+    Q_ASSERT(channels == 1);
+    int nRows = gray.rows;
+    int nCols = gray.cols;
+
+    uchar *p;
+    for( int i = 0; i < nRows; ++i )
+    {
+        p = gray.ptr<uchar>(i);
+        uchar bg = bgColor.ptr<uchar>(i)[0];
+        uchar bg2 = bgColor.ptr<uchar>(i)[1];
+        for(int j=0; j < nCols; ++j )
+        {
+            uchar c = p[j];
+            p[j] = c == bg || c == bg2 ? 0 : 255;
+        }
+    }
+}
+
 void Util::getCellRectWithoutBorder(const Mat &bin, float horiBorderMinRatio, float vertBorderMinRatio, float cellMinWidthRatio, float cellMinHeightRatio, std::vector<std::vector<Rect> > &cellRects)
 {
     // find table border

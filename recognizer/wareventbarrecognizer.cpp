@@ -21,6 +21,9 @@ bool WarEventBarRecognizer::recognize(Mat bar)
     cvtColor(bar, grayBar, CV_BGR2GRAY);
 
     //imshow("grayBar", grayBar);
+    //imwrite(RPATH "graybar.png", grayBar);
+
+    Mat ret = Util::getHoriProjectionBgColor(grayBar);
 
     int height = scanBarBottomHeight(grayBar);
 

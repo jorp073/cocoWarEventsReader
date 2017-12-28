@@ -15,6 +15,14 @@ public:
     static void horizonBinProjection(const cv::Mat& src, cv::Mat& dst);
     static void verticalBinProjection(const cv::Mat& src, cv::Mat& dst);
 
+    /*
+     * return mat.ncols is gray.nrow
+     * return mat.row1 is main bgcolor, row2 is second bgcolor
+     */
+    static cv::Mat getHoriProjectionBgColor(cv::Mat gray);
+
+    static void removeHoriProjectionBg(cv::Mat gray, cv::Mat bgColor);
+
     static void getCellRectWithoutBorder(
             const cv::Mat& bin,
             float horiBorderMinRatio, float vertBorderMinRatio,
